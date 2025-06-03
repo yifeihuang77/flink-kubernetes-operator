@@ -202,7 +202,7 @@ public class FlinkDeploymentControllerTest {
                 org.apache.flink.api.common.JobStatus.RUNNING.name(),
                 appCluster.getStatus().getJobStatus().getState());
         assertEquals(7, testController.getInternalStatusUpdateCount());
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
 
         reconciliationStatus = appCluster.getStatus().getReconciliationStatus();
         assertTrue(
@@ -268,7 +268,7 @@ public class FlinkDeploymentControllerTest {
                 testController.reconcile(
                         appCluster, TestUtils.createContextWithFailedJobManagerDeployment());
         submittedEventValidatingResponseProvider.assertValidated();
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(
                 Optional.of(
                         configManager.getOperatorConfiguration().getReconcileInterval().toMillis()),
@@ -290,7 +290,7 @@ public class FlinkDeploymentControllerTest {
         assertEquals(
                 JobManagerDeploymentStatus.ERROR,
                 appCluster.getStatus().getJobManagerDeploymentStatus());
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(
                 ReconciliationUtils.rescheduleAfter(
                                 JobManagerDeploymentStatus.ERROR,
@@ -656,7 +656,7 @@ public class FlinkDeploymentControllerTest {
         // reconcile() finishes.
         appCluster.getSpec().getFlinkConfiguration().put(RestOptions.PORT.key(), "8088");
         updateControl = testController.reconcile(appCluster, context);
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(
                 JobManagerDeploymentStatus.DEPLOYING,
                 appCluster.getStatus().getJobManagerDeploymentStatus());
@@ -670,7 +670,7 @@ public class FlinkDeploymentControllerTest {
                         .getStatus()
                         .getError()
                         .contains("JobManager replicas should not be configured less than one."));
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(
                 JobManagerDeploymentStatus.DEPLOYED_NOT_READY,
                 appCluster.getStatus().getJobManagerDeploymentStatus());
@@ -696,14 +696,14 @@ public class FlinkDeploymentControllerTest {
         UpdateControl<FlinkDeployment> updateControl;
 
         updateControl = testController.reconcile(appCluster, context);
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(
                 JobManagerDeploymentStatus.DEPLOYING,
                 appCluster.getStatus().getJobManagerDeploymentStatus());
 
         updateControl = testController.reconcile(appCluster, context);
         JobStatus jobStatus = appCluster.getStatus().getJobStatus();
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(
                 JobManagerDeploymentStatus.DEPLOYED_NOT_READY,
                 appCluster.getStatus().getJobManagerDeploymentStatus());
@@ -715,7 +715,7 @@ public class FlinkDeploymentControllerTest {
         appCluster.getSpec().setJob(null);
         // Validation fails and JobObserver should still be used
         updateControl = testController.reconcile(appCluster, context);
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(
                 JobManagerDeploymentStatus.READY,
                 appCluster.getStatus().getJobManagerDeploymentStatus());
@@ -741,14 +741,14 @@ public class FlinkDeploymentControllerTest {
         UpdateControl<FlinkDeployment> updateControl;
 
         updateControl = testController.reconcile(appCluster, context);
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(
                 JobManagerDeploymentStatus.DEPLOYING,
                 appCluster.getStatus().getJobManagerDeploymentStatus());
 
         updateControl = testController.reconcile(appCluster, context);
         JobStatus jobStatus = appCluster.getStatus().getJobStatus();
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(
                 JobManagerDeploymentStatus.DEPLOYED_NOT_READY,
                 appCluster.getStatus().getJobManagerDeploymentStatus());
@@ -759,7 +759,7 @@ public class FlinkDeploymentControllerTest {
         appCluster.getSpec().setJob(TestUtils.buildSessionJob().getSpec().getJob());
         // Validation fails and JobObserver should still be used
         updateControl = testController.reconcile(appCluster, context);
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(
                 JobManagerDeploymentStatus.READY,
                 appCluster.getStatus().getJobManagerDeploymentStatus());

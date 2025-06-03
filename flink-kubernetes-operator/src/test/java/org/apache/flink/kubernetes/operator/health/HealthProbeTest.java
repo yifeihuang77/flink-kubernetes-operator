@@ -31,8 +31,6 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.server.mock.EnableKubernetesMockClient;
 import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.RuntimeInfo;
-import io.javaoperatorsdk.operator.api.config.ConfigurationServiceProvider;
-import io.javaoperatorsdk.operator.api.config.ResourceConfiguration;
 import io.javaoperatorsdk.operator.health.InformerHealthIndicator;
 import io.javaoperatorsdk.operator.health.InformerWrappingEventSourceHealthIndicator;
 import io.javaoperatorsdk.operator.health.Status;
@@ -52,7 +50,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** @link Health probe unit tests */
+/**
+ * @link Health probe unit tests
+ */
 @EnableKubernetesMockClient(crud = true)
 public class HealthProbeTest {
     KubernetesClient client;
@@ -72,7 +72,6 @@ public class HealthProbeTest {
                     new FlinkOperator(conf) {
                         @Override
                         protected Operator createOperator() {
-                            ConfigurationServiceProvider.reset();
                             return new Operator(client);
                         }
                     };
@@ -257,16 +256,6 @@ public class HealthProbeTest {
                                     }
                                 }));
 
-        return new InformerWrappingEventSourceHealthIndicator() {
-            @Override
-            public Map<String, InformerHealthIndicator> informerHealthIndicators() {
-                return informers;
-            }
-
-            @Override
-            public ResourceConfiguration getInformerConfiguration() {
-                return null;
-            }
-        };
+        return () -> informers;
     }
 }

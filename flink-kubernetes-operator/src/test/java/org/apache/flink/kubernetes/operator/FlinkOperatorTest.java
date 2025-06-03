@@ -24,7 +24,6 @@ import org.apache.flink.kubernetes.operator.config.KubernetesOperatorConfigOptio
 import io.fabric8.kubernetes.client.Config;
 import io.javaoperatorsdk.operator.RegisteredController;
 import io.javaoperatorsdk.operator.api.config.ConfigurationServiceProvider;
-import io.javaoperatorsdk.operator.api.config.ControllerConfiguration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -80,7 +79,7 @@ public class FlinkOperatorTest {
         var labelSelectors =
                 testOperator.registeredControllers.stream()
                         .map(RegisteredController::getConfiguration)
-                        .map(ControllerConfiguration::getLabelSelector);
+                        .map(c -> c.getInformerConfig().getLabelSelector());
 
         labelSelectors.forEach(selector -> Assertions.assertEquals(testSelector, selector));
         Assertions.assertFalse(

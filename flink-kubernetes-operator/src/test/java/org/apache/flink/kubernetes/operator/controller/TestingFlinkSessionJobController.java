@@ -41,13 +41,9 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
-import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusHandler;
 import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl;
-import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
-import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.ResourceID;
-import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -58,8 +54,6 @@ import java.util.function.BiConsumer;
 /** A wrapper around {@link FlinkSessionJobController} used by unit tests. */
 public class TestingFlinkSessionJobController
         implements io.javaoperatorsdk.operator.api.reconciler.Reconciler<FlinkSessionJob>,
-                ErrorStatusHandler<FlinkSessionJob>,
-                EventSourceInitializer<FlinkSessionJob>,
                 Cleaner<FlinkSessionJob> {
 
     @Getter private CanaryResourceManager<FlinkSessionJob> canaryResourceManager;
@@ -148,12 +142,6 @@ public class TestingFlinkSessionJobController
         FlinkSessionJob cloned = ReconciliationUtils.clone(flinkSessionJob);
         statusUpdateCounter.setCurrent(flinkSessionJob);
         return flinkSessionJobController.cleanup(cloned, context);
-    }
-
-    @Override
-    public Map<String, EventSource> prepareEventSources(
-            EventSourceContext<FlinkSessionJob> eventSourceContext) {
-        return null;
     }
 
     public Queue<Event> events() {
