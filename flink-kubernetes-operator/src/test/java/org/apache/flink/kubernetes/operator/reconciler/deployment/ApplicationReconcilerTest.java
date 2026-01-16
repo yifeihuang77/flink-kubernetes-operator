@@ -99,7 +99,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-/** @link JobStatusObserver unit tests */
+/**
+ * @link JobStatusObserver unit tests
+ */
 @EnableKubernetesMockClient(crud = true)
 public class ApplicationReconcilerTest extends OperatorTestBase {
 
@@ -463,11 +465,11 @@ public class ApplicationReconcilerTest extends OperatorTestBase {
                 .setJobStatus(
                         new JobStatus()
                                 .toBuilder()
-                                .jobId(runningJobs.get(0).f1.getJobId().toHexString())
-                                .jobName(runningJobs.get(0).f1.getJobName())
-                                .updateTime(Long.toString(System.currentTimeMillis()))
-                                .state("RUNNING")
-                                .build());
+                                        .jobId(runningJobs.get(0).f1.getJobId().toHexString())
+                                        .jobName(runningJobs.get(0).f1.getJobName())
+                                        .updateTime(Long.toString(System.currentTimeMillis()))
+                                        .state("RUNNING")
+                                        .build());
         deployment.getStatus().setJobManagerDeploymentStatus(JobManagerDeploymentStatus.READY);
     }
 

@@ -80,7 +80,8 @@ public class EventSourceUtils {
                 InformerEventSourceConfiguration.from(FlinkSessionJob.class, FlinkDeployment.class)
                         .withSecondaryToPrimaryMapper(
                                 sessionJob ->
-                                        context.getPrimaryCache()
+                                        context
+                                                .getPrimaryCache()
                                                 .byIndex(
                                                         FLINK_DEPLOYMENT_IDX,
                                                         indexKey(
@@ -115,7 +116,8 @@ public class EventSourceUtils {
                 InformerEventSourceConfiguration.from(FlinkDeployment.class, FlinkSessionJob.class)
                         .withSecondaryToPrimaryMapper(
                                 flinkDeployment ->
-                                        context.getPrimaryCache()
+                                        context
+                                                .getPrimaryCache()
                                                 .byIndex(
                                                         FLINK_SESSIONJOB_IDX,
                                                         indexKey(

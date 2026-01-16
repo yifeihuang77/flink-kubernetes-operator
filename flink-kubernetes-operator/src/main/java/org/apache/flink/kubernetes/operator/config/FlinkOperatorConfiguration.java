@@ -241,7 +241,8 @@ public class FlinkOperatorConfiguration {
         int maxAttempts =
                 conf.getInteger(KubernetesOperatorConfigOptions.OPERATOR_RETRY_MAX_ATTEMPTS);
         long initialInterval =
-                conf.get(KubernetesOperatorConfigOptions.OPERATOR_RETRY_INITIAL_INTERVAL).toMillis();
+                conf.get(KubernetesOperatorConfigOptions.OPERATOR_RETRY_INITIAL_INTERVAL)
+                        .toMillis();
         double intervalMultiplier =
                 conf.getDouble(KubernetesOperatorConfigOptions.OPERATOR_RETRY_INTERVAL_MULTIPLIER);
         long maxInterval = (long) (initialInterval * Math.pow(intervalMultiplier, maxAttempts));
