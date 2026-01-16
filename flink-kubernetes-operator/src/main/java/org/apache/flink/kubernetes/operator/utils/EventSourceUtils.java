@@ -23,14 +23,16 @@ import org.apache.flink.kubernetes.operator.controller.FlinkDeploymentController
 import org.apache.flink.kubernetes.operator.controller.FlinkSessionJobController;
 import org.apache.flink.kubernetes.utils.Constants;
 
+import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
-import io.javaoperatorsdk.operator.api.config.informer.InformerConfiguration;
+import io.javaoperatorsdk.operator.api.config.informer.InformerEventSourceConfiguration;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
 import io.javaoperatorsdk.operator.processing.event.ResourceID;
 import io.javaoperatorsdk.operator.processing.event.source.PrimaryToSecondaryMapper;
+import io.javaoperatorsdk.operator.processing.event.source.SecondaryToPrimaryMapper;
 import io.javaoperatorsdk.operator.processing.event.source.informer.InformerEventSource;
-import io.javaoperatorsdk.operator.processing.event.source.informer.Mappers;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,16 +48,17 @@ public class EventSourceUtils {
             EventSourceContext<FlinkDeployment> context) {
         final String labelSelector =
                 Map.of(Constants.LABEL_COMPONENT_KEY, Constants.LABEL_COMPONENT_JOB_MANAGER)
-                        .entrySet().stream()
+                        .entrySet()
+                        .stream()
                         .map(Object::toString)
                         .collect(Collectors.joining(","));
 
         var configuration =
-                InformerConfiguration.from(Deployment.class, context)
+                InformerEventSourceConfiguration.from(Deployment.class, FlinkDeployment.class)
                         .withLabelSelector(labelSelector)
-                        .withSecondaryToPrimaryMapper(Mappers.fromLabel(Constants.LABEL_APP_KEY))
-                        .withNamespacesInheritedFromController(context)
-                        .followNamespaceChanges(true)
+                        .withSecondaryToPrimaryMapper(fromLabel(Constants.LABEL_APP_KEY))
+                        .withNamespacesInheritedFromController()
+                        .withFollowControllerNamespacesChanges(true)
                         .build();
 
         return new InformerEventSource<>(configuration, context);
@@ -73,8 +76,8 @@ public class EventSourceUtils {
                                                 flinkDeployment.getMetadata().getName(),
                                                 flinkDeployment.getMetadata().getNamespace())));
 
-        InformerConfiguration<FlinkSessionJob> configuration =
-                InformerConfiguration.from(FlinkSessionJob.class, context)
+        var configuration =
+                InformerEventSourceConfiguration.from(FlinkSessionJob.class, FlinkDeployment.class)
                         .withSecondaryToPrimaryMapper(
                                 sessionJob ->
                                         context.getPrimaryCache()
@@ -90,8 +93,8 @@ public class EventSourceUtils {
                                                 .stream()
                                                 .map(ResourceID::fromResource)
                                                 .collect(Collectors.toSet()))
-                        .withNamespacesInheritedFromController(context)
-                        .followNamespaceChanges(true)
+                        .withNamespacesInheritedFromController()
+                        .withFollowControllerNamespacesChanges(true)
                         .build();
 
         return new InformerEventSource<>(configuration, context);
@@ -108,8 +111,8 @@ public class EventSourceUtils {
                                                 sessionJob.getSpec().getDeploymentName(),
                                                 sessionJob.getMetadata().getNamespace())));
 
-        InformerConfiguration<FlinkDeployment> configuration =
-                InformerConfiguration.from(FlinkDeployment.class, context)
+        var configuration =
+                InformerEventSourceConfiguration.from(FlinkDeployment.class, FlinkSessionJob.class)
                         .withSecondaryToPrimaryMapper(
                                 flinkDeployment ->
                                         context.getPrimaryCache()
@@ -136,10 +139,30 @@ public class EventSourceUtils {
                                                                 sessionJob
                                                                         .getMetadata()
                                                                         .getNamespace())))
-                        .withNamespacesInheritedFromController(context)
-                        .followNamespaceChanges(true)
+                        .withNamespacesInheritedFromController()
+                        .withFollowControllerNamespacesChanges(true)
                         .build();
         return new InformerEventSource<>(configuration, context);
+    }
+
+    public static <T extends HasMetadata> SecondaryToPrimaryMapper<T> fromLabel(String nameKey) {
+        return resource -> {
+            final var metadata = resource.getMetadata();
+            if (metadata == null) {
+                return Collections.emptySet();
+            } else {
+                final var map = metadata.getLabels();
+                if (map == null) {
+                    return Collections.emptySet();
+                }
+                var name = map.get(nameKey);
+                if (name == null) {
+                    return Collections.emptySet();
+                }
+                var namespace = resource.getMetadata().getNamespace();
+                return Set.of(new ResourceID(name, namespace));
+            }
+        };
     }
 
     private static String indexKey(String name, String namespace) {
