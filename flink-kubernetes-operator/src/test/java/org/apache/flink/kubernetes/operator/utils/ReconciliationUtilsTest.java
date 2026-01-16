@@ -55,15 +55,15 @@ public class ReconciliationUtilsTest {
         UpdateControl<FlinkDeployment> updateControl =
                 ReconciliationUtils.toUpdateControl(operatorConfiguration, current, previous, true);
 
-        assertFalse(updateControl.isUpdateResource());
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchResource());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(0, updateControl.getScheduleDelay().get());
 
         updateControl =
                 ReconciliationUtils.toUpdateControl(operatorConfiguration, current, current, true);
 
-        assertFalse(updateControl.isUpdateResource());
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchResource());
+        assertFalse(updateControl.isPatchStatus());
         assertNotEquals(0, updateControl.getScheduleDelay().get());
     }
 

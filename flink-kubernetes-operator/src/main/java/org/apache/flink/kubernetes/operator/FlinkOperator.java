@@ -112,6 +112,11 @@ public class FlinkOperator {
         return new Operator(this::overrideOperatorConfigs);
     }
 
+    @VisibleForTesting
+    protected Operator getOperator() {
+        return operator;
+    }
+
     private void handleNamespaceChanges(Set<String> namespaces) {
         registeredControllers.forEach(
                 controller -> {

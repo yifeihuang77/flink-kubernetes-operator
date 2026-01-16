@@ -105,7 +105,7 @@ class FlinkSessionJobControllerTest {
         assertEquals(
                 JobStatus.RECONCILING.name(), sessionJob.getStatus().getJobStatus().getState());
         assertEquals(3, testController.getInternalStatusUpdateCount());
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(
                 Optional.of(
                         configManager.getOperatorConfiguration().getReconcileInterval().toMillis()),
@@ -122,7 +122,7 @@ class FlinkSessionJobControllerTest {
         updateControl = testController.reconcile(sessionJob, context);
         assertEquals(JobStatus.RUNNING.name(), sessionJob.getStatus().getJobStatus().getState());
         assertEquals(4, testController.getInternalStatusUpdateCount());
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(
                 Optional.of(
                         configManager.getOperatorConfiguration().getReconcileInterval().toMillis()),
@@ -132,7 +132,7 @@ class FlinkSessionJobControllerTest {
         updateControl = testController.reconcile(sessionJob, context);
         assertEquals(JobStatus.RUNNING.name(), sessionJob.getStatus().getJobStatus().getState());
         assertEquals(4, testController.getInternalStatusUpdateCount());
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(
                 Optional.of(
                         configManager.getOperatorConfiguration().getReconcileInterval().toMillis()),
@@ -154,7 +154,7 @@ class FlinkSessionJobControllerTest {
 
         assertEquals(JobStatus.RUNNING.name(), sessionJob.getStatus().getJobStatus().getState());
         assertEquals(5, testController.getInternalStatusUpdateCount());
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
 
         reconciliationStatus = sessionJob.getStatus().getReconciliationStatus();
         assertTrue(
@@ -404,7 +404,7 @@ class FlinkSessionJobControllerTest {
                 .getFlinkConfiguration()
                 .put(KubernetesOperatorConfigOptions.JAR_ARTIFACT_HTTP_HEADER.key(), "changed");
         updateControl = testController.reconcile(sessionJob, context);
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(
                 JobStatus.RECONCILING.name(), sessionJob.getStatus().getJobStatus().getState());
 
@@ -417,7 +417,7 @@ class FlinkSessionJobControllerTest {
                         .getStatus()
                         .getError()
                         .contains("Job parallelism must be larger than 0"));
-        assertFalse(updateControl.isUpdateStatus());
+        assertFalse(updateControl.isPatchStatus());
         assertEquals(JobStatus.RUNNING.name(), sessionJob.getStatus().getJobStatus().getState());
 
         // Make sure we do validation before getting effective config in reconcile().

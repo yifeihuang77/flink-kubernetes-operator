@@ -41,16 +41,14 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.javaoperatorsdk.operator.api.reconciler.Cleaner;
 import io.javaoperatorsdk.operator.api.reconciler.Context;
 import io.javaoperatorsdk.operator.api.reconciler.DeleteControl;
-import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusHandler;
-import io.javaoperatorsdk.operator.api.reconciler.ErrorStatusUpdateControl;
 import io.javaoperatorsdk.operator.api.reconciler.EventSourceContext;
-import io.javaoperatorsdk.operator.api.reconciler.EventSourceInitializer;
 import io.javaoperatorsdk.operator.api.reconciler.UpdateControl;
 import io.javaoperatorsdk.operator.processing.event.ResourceID;
 import io.javaoperatorsdk.operator.processing.event.source.EventSource;
 import lombok.Getter;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.function.BiConsumer;
@@ -58,8 +56,6 @@ import java.util.function.BiConsumer;
 /** A wrapper around {@link FlinkSessionJobController} used by unit tests. */
 public class TestingFlinkSessionJobController
         implements io.javaoperatorsdk.operator.api.reconciler.Reconciler<FlinkSessionJob>,
-                ErrorStatusHandler<FlinkSessionJob>,
-                EventSourceInitializer<FlinkSessionJob>,
                 Cleaner<FlinkSessionJob> {
 
     @Getter private CanaryResourceManager<FlinkSessionJob> canaryResourceManager;
@@ -135,14 +131,6 @@ public class TestingFlinkSessionJobController
     }
 
     @Override
-    public ErrorStatusUpdateControl<FlinkSessionJob> updateErrorStatus(
-            FlinkSessionJob flinkSessionJob, Context<FlinkSessionJob> context, Exception e) {
-        FlinkSessionJob cloned = ReconciliationUtils.clone(flinkSessionJob);
-        statusUpdateCounter.setCurrent(flinkSessionJob);
-        return flinkSessionJobController.updateErrorStatus(cloned, context, e);
-    }
-
-    @Override
     public DeleteControl cleanup(
             FlinkSessionJob flinkSessionJob, Context<FlinkSessionJob> context) {
         FlinkSessionJob cloned = ReconciliationUtils.clone(flinkSessionJob);
@@ -151,7 +139,7 @@ public class TestingFlinkSessionJobController
     }
 
     @Override
-    public Map<String, EventSource> prepareEventSources(
+    public List<EventSource<?, FlinkSessionJob>> prepareEventSources(
             EventSourceContext<FlinkSessionJob> eventSourceContext) {
         return null;
     }
