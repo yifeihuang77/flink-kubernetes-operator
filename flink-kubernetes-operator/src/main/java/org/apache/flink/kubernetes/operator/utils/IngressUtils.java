@@ -38,7 +38,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.module.ModuleDescriptor;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
@@ -240,22 +239,9 @@ public class IngressUtils {
     }
 
     public static boolean ingressInNetworkingV1(KubernetesClient client) {
-        // networking.k8s.io/v1/Ingress is available in K8s 1.19
-        // See:
-        // https://kubernetes.io/docs/reference/using-api/deprecation-guide/
-        // https://kubernetes.io/blog/2021/07/14/upcoming-changes-in-kubernetes-1-22/
-        String serverVersion =
-                client.getKubernetesVersion().getMajor()
-                        + "."
-                        + client.getKubernetesVersion().getMinor();
-        String targetVersion = "1.19";
-        try {
-            return ModuleDescriptor.Version.parse(serverVersion)
-                            .compareTo(ModuleDescriptor.Version.parse(targetVersion))
-                    >= 0;
-        } catch (IllegalArgumentException e) {
-            LOG.warn("Failed to parse Kubernetes server version: {}", serverVersion);
-            return serverVersion.compareTo(targetVersion) >= 0;
-        }
+        // Hardcoded to true to avoid fabric8 getKubernetesVersion() incompatibility with K8s 1.33.
+        // networking.k8s.io/v1/Ingress has been stable since K8s 1.19 and v1beta1 was removed in
+        // 1.22.
+        return true;
     }
 }
