@@ -395,9 +395,7 @@ public class KubernetesOperatorConfigOptions {
     public static final ConfigOption<Duration> OPERATOR_TERMINATION_TIMEOUT =
             operatorConfig("termination.timeout")
                     .durationType()
-                    .defaultValue(
-                            Duration.ofSeconds(
-                                    ConfigurationService.DEFAULT_TERMINATION_TIMEOUT_SECONDS))
+                    .defaultValue(Duration.ofSeconds(10))
                     .withDescription(
                             "Operator shutdown timeout before reconciliation threads are killed.");
 

@@ -56,12 +56,12 @@ import io.javaoperatorsdk.operator.Operator;
 import io.javaoperatorsdk.operator.RegisteredController;
 import io.javaoperatorsdk.operator.api.config.ConfigurationServiceOverrider;
 import io.javaoperatorsdk.operator.api.config.ControllerConfigurationOverrider;
-import io.javaoperatorsdk.operator.processing.retry.GenericRetry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -109,7 +109,7 @@ public class FlinkOperator {
 
     @VisibleForTesting
     protected Operator createOperator() {
-        return new Operator(client, this::overrideOperatorConfigs);
+        return new Operator(this::overrideOperatorConfigs);
     }
 
     private void handleNamespaceChanges(Set<String> namespaces) {
@@ -123,6 +123,7 @@ public class FlinkOperator {
     }
 
     private void overrideOperatorConfigs(ConfigurationServiceOverrider overrider) {
+        overrider.withKubernetesClient(client);
         var conf = configManager.getDefaultConfig();
         var operatorConf = FlinkOperatorConfiguration.fromConfiguration(conf);
         int parallelism = operatorConf.getReconcilerMaxParallelism();
@@ -138,10 +139,10 @@ public class FlinkOperator {
             overrider.withMetrics(new OperatorJosdkMetrics(metricGroup, configManager));
         }
 
-        overrider.withTerminationTimeoutSeconds(
-                (int)
+        overrider.withReconciliationTerminationTimeout(
+                Duration.ofSeconds(
                         conf.get(KubernetesOperatorConfigOptions.OPERATOR_TERMINATION_TIMEOUT)
-                                .toSeconds());
+                                .toSeconds()));
 
         overrider.withStopOnInformerErrorDuringStartup(
                 conf.get(KubernetesOperatorConfigOptions.OPERATOR_STOP_ON_INFORMER_ERROR));
@@ -211,7 +212,7 @@ public class FlinkOperator {
         LOG.info("Configuring operator to watch the following namespaces: {}.", watchNamespaces);
         overrider.settingNamespaces(operatorConf.getWatchedNamespaces());
 
-        overrider.withRetry(GenericRetry.fromConfiguration(operatorConf.getRetryConfiguration()));
+        overrider.withRetry(operatorConf.getRetryConfiguration());
 
         var labelSelector = operatorConf.getLabelSelector();
         LOG.info(
@@ -223,7 +224,8 @@ public class FlinkOperator {
     public void run() {
         registerDeploymentController();
         registerSessionJobController();
-        operator.installShutdownHook();
+        operator.installShutdownHook(
+                baseConfig.get(KubernetesOperatorConfigOptions.OPERATOR_TERMINATION_TIMEOUT));
         operator.start();
         if (operatorHealthService != null) {
             HealthProbe.INSTANCE.setRuntimeInfo(operator.getRuntimeInfo());
